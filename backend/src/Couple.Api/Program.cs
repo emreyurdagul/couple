@@ -1,5 +1,6 @@
 using System.Text;
 using Couple.Api.Auth;
+using Couple.Api.Endpoints;
 using Couple.Api.Hubs;
 using Couple.Domain.Abstractions;
 using Couple.Infrastructure;
@@ -26,6 +27,7 @@ if (string.IsNullOrWhiteSpace(jwtOpts.Secret))
 }
 builder.Services.AddSingleton(jwtOpts);
 builder.Services.AddSingleton<JwtTokenService>();
+builder.Services.AddScoped<AuthService>();
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -84,6 +86,9 @@ app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.Health
 });
 
 app.MapGet("/", () => Results.Ok(new { name = "Couple API", version = "0.1.0" }));
+
+app.MapAuthEndpoints();
+app.MapCoupleEndpoints();
 
 app.MapHub<ChatHub>("/hubs/chat");
 app.MapHub<LocationHub>("/hubs/location");

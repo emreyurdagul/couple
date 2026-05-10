@@ -11,11 +11,12 @@ E-posta/parola ile kayıt + login (JWT access + refresh), 6 haneli kod ve QR ile
 
 - [x] **Lokal dev DB hazırlığı** — Podman ile postgres-postgis 16 container başlatıldı, `couple_dev` DB + PostGIS 3.4 extension; 15 tablo + EFMigrationsHistory aktif
 - [x] **İlk EF Core migration** (`InitialSchema`) — Identity + couple-scoped entity'ler + outbox + indeksler + GIST index `LocationPoints.Position` üstünde
-- [ ] Auth endpoint'leri (`/auth/register`, `/auth/login`, `/auth/refresh`, `/auth/logout`) + `RefreshToken` entity
-- [ ] `/couples/invites` (POST) + `/couples/invites/{code}/accept` (POST) + `GET /couples/me` + `DELETE /couples/me`
-- [ ] JWT yenileme: eşleşme/ayrılma sonrası `couple_id` claim güncellemesi
-- [ ] Couple-scope query filter'a `Couple.Status == Active` koşulu (ADR-0004)
-- [ ] Mobil: kayıt/giriş ekranları, davet üret (QR + 6 haneli kod), partner kodu gir/QR tara, eşleşme onay ekranı
+- [x] **Auth endpoint'leri** (`/auth/register`, `/auth/login`, `/auth/refresh`, `/auth/logout`) + `RefreshToken` entity + rotating + revoke
+- [x] **Couple endpoint'leri** (`/couples/invites`, `/couples/invites/{code}/accept`, `GET /couples/me`, `DELETE /couples/me`) — soft-archive
+- [x] **JWT couple_id güncellemesi** refresh akışında (token yenilenince `GetActiveCoupleIdAsync` ile claim eklenir/çıkarılır)
+- [x] **E2E curl smoke**: register × 2 + davet + kabul + refresh + me + delete + 404 — `docs/progress/scripts/auth-and-invite-smoke.sh`
+- [ ] **Couple-scope query filter'a `Status==Active` koşulu** — şu an `IgnoreQueryFilters` ile manuel kontrol; daha sonra navigation property + filter
+- [ ] **Mobil**: kayıt/giriş ekranları, davet üret (QR + 6 haneli kod), partner kodu gir/QR tara, eşleşme onay ekranı (sıradaki adım)
 
 ## Kararlar
 
@@ -31,7 +32,7 @@ E-posta/parola ile kayıt + login (JWT access + refresh), 6 haneli kod ve QR ile
 - `backend/src/Couple.Infrastructure/Persistence/DesignTimeDbContextFactory.cs` — **silindi** (EF Tools Program.cs üstünden gidiyor; appsettings env-aware)
 - `infra/docker-compose.yml` — fully-qualified imaj adları (`docker.io/...`); volume'ler bind-mount yerine **named volume** (rootless Podman UID uyumsuzluğunu çözmek için)
 
-## Doğrulama (şimdiye kadar yapılan)
+## Doğrulama
 
 ```bash
 # Postgres + PostGIS
@@ -39,17 +40,27 @@ podman exec couple-postgres pg_isready -U postgres        # accepting connection
 podman exec couple-postgres psql -U postgres -d couple_dev -c "SELECT PostGIS_Version();"
 # 3.4 USE_GEOS=1 USE_PROJ=1 USE_STATS=1
 
-# EF migration
+# EF migrations
 dotnet ef database update --project src/Couple.Infrastructure --startup-project src/Couple.Api
-# Applying migration '20260510153703_InitialSchema' → Done.
+# Applied: 20260510153703_InitialSchema, 20260510154406_AddRefreshTokens
 
-podman exec couple-postgres psql -U postgres -d couple_dev -c "\dt"
-# 15 tablo (Identity + couple-scoped + outbox + EFMigrationsHistory + spatial_ref_sys)
+# Build
+cd backend && dotnet build         # 0 hata, 4 NU1903 uyarı (Identity 9 transitive)
+
+# E2E smoke (otomatik — AI tarafından çalıştırıldı, geçti)
+cd backend/src/Couple.Api && dotnet run --no-build &
+docs/progress/scripts/auth-and-invite-smoke.sh
+# Sonuç: tüm 8 adım yeşil, soft-archive sonrası /couples/me 404 döndü
 ```
 
 ### Kullanıcı doğrulaması gerekli
 
-Bu noktada API endpoint'i henüz yok, doğrulama setup düzeyinde. Test edilecek bir UX yok.
+Backend tarafı tamamlandı; mobil ekranlar geldikten sonra **gerçek 2 cihaz/emülatör** ile şu akış manuel test edilecek:
+
+1. Cihaz A → kayıt ol → davet ekranında kod + QR görünüyor mu?
+2. Cihaz B → kayıt ol → "Partnerini ekle" ekranında kod gir veya QR tara
+3. Eşleşme aktif olunca her iki tarafta partner adı + ana ekran açılıyor mu?
+4. Bir taraf "Ayrıl" → her iki tarafta tekrar onboard ekranı gelmeli; refresh token revoke nedeniyle yeniden giriş istenmeli
 
 ## Açık sorular / sonraki faza taşınanlar
 

@@ -23,6 +23,7 @@ public class CoupleDbContext : IdentityDbContext<ApplicationUser, IdentityRole<G
     public DbSet<LocationPoint> LocationPoints => Set<LocationPoint>();
     public DbSet<DeviceToken> DeviceTokens => Set<DeviceToken>();
     public DbSet<OutboxEvent> OutboxEvents => Set<OutboxEvent>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -79,6 +80,14 @@ public class CoupleDbContext : IdentityDbContext<ApplicationUser, IdentityRole<G
             e.HasKey(x => x.Id);
             e.Property(x => x.Payload).HasColumnType("jsonb");
             e.HasIndex(x => x.DispatchedAt);
+        });
+
+        b.Entity<RefreshToken>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.Property(x => x.TokenHash).HasMaxLength(128).IsRequired();
+            e.HasIndex(x => x.TokenHash).IsUnique();
+            e.HasIndex(x => x.UserId);
         });
     }
 
