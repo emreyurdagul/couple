@@ -1,0 +1,26 @@
+{
+    # email your@example.com  # uncomment in production for Let's Encrypt
+}
+
+# Replace with your real domain in production. For local-only, use :80.
+:80 {
+    @hubs path /hubs/*
+    reverse_proxy @hubs api:8080 {
+        transport http {
+            keepalive 1h
+        }
+    }
+
+    @media path /media/*
+    reverse_proxy @media minio:9000
+
+    reverse_proxy api:8080
+}
+
+# Production example (uncomment + adjust):
+# api.yourdomain.com {
+#     reverse_proxy api:8080
+# }
+# media.yourdomain.com {
+#     reverse_proxy minio:9000
+# }
