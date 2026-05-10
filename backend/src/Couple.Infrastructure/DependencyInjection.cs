@@ -1,5 +1,6 @@
 using Couple.Domain.Abstractions;
 using Couple.Infrastructure.Identity;
+using Couple.Infrastructure.Messaging;
 using Couple.Infrastructure.Outbox;
 using Couple.Infrastructure.Persistence;
 using Couple.Infrastructure.Persistence.Interceptors;
@@ -38,6 +39,7 @@ public static class DependencyInjection
 
         services.AddScoped<IOutboxPublisher, OutboxPublisher>();
         services.AddHostedService<OutboxDispatcher>();
+        services.AddScoped<IMessageService, MessageService>();
 
         return services;
     }

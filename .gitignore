@@ -8,6 +8,9 @@ Thumbs.db
 *.swp
 *~
 
+# Claude Code yerel ayarları (kişisel izinler)
+.claude/settings.local.json
+
 # Secrets / env
 .env
 .env.local

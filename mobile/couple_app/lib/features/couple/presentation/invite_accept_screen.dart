@@ -2,8 +2,14 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
+import '../../../core/theme/tokens.dart';
+import '../../../core/theme/typography.dart';
+import '../../../shared/widgets/journal_field.dart';
+import '../../../shared/widgets/paper_scaffold.dart';
+import '../../../shared/widgets/stamp_button.dart';
 import '../../auth/state/auth_controller.dart';
 import '../data/couple_repository.dart';
 
@@ -40,7 +46,6 @@ class _InviteAcceptScreenState extends ConsumerState<InviteAcceptScreen>
     });
     try {
       await ref.read(coupleRepositoryProvider).acceptInvite(code);
-      // couple_id claim'ini almak için token'ı yenile
       await ref.read(authControllerProvider.notifier).rotateAfterCoupleChange();
       if (!mounted) return;
       context.go('/');
@@ -54,38 +59,40 @@ class _InviteAcceptScreenState extends ConsumerState<InviteAcceptScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PaperScaffold(
+      pageNumber: 3,
+      padding: EdgeInsets.zero,
       appBar: AppBar(
-        title: const Text('Daveti kabul et'),
-        bottom: TabBar(
-          controller: _tab,
-          tabs: const [
-            Tab(icon: Icon(Icons.dialpad), text: 'Kodu yaz'),
-            Tab(icon: Icon(Icons.qr_code_scanner), text: 'QR tara'),
-          ],
-        ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, size: 20),
+          color: AppColors.ink,
           onPressed: () => context.go('/couple'),
         ),
-      ),
-      body: SafeArea(
-        child: TabBarView(
+        title: Text('Daveti kabul et', style: AppText.title(context)),
+        bottom: TabBar(
           controller: _tab,
-          children: [
-            _ManualCodeTab(
-              controller: _codeCtl,
-              busy: _busy,
-              error: _error,
-              onSubmit: () => _submit(_codeCtl.text),
-            ),
-            _QrScanTab(
-              busy: _busy,
-              error: _error,
-              onDetected: (code) => _submit(code),
-            ),
+          dividerColor: AppColors.ruleSoft,
+          tabs: const [
+            Tab(icon: Icon(Icons.dialpad, size: 18), text: 'KOD'),
+            Tab(icon: Icon(Icons.qr_code_scanner, size: 18), text: 'QR'),
           ],
         ),
+      ),
+      body: TabBarView(
+        controller: _tab,
+        children: [
+          _ManualCodeTab(
+            controller: _codeCtl,
+            busy: _busy,
+            error: _error,
+            onSubmit: () => _submit(_codeCtl.text),
+          ),
+          _QrScanTab(
+            busy: _busy,
+            error: _error,
+            onDetected: (code) => _submit(code),
+          ),
+        ],
       ),
     );
   }
@@ -106,45 +113,57 @@ class _ManualCodeTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        AppSpacing.xl,
+        AppSpacing.lg,
+        AppSpacing.lg,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SizedBox(height: 24),
           Text(
-            'Partnerinin sana verdiği 6 haneli kodu gir.',
-            style: Theme.of(context).textTheme.bodyLarge,
+            'Kodu yaz.',
+            style: AppText.headline(context),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 24),
-          TextField(
-            controller: controller,
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            'Partnerinin sayfasından aldığın 6 haneli kodu gir.',
+            style: AppText.subtitle(context),
             textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppSpacing.xxl),
+          JournalField(
+            controller: controller,
+            label: 'davet kodu',
             textCapitalization: TextCapitalization.characters,
             maxLength: 6,
-            decoration: const InputDecoration(
-              labelText: 'Davet kodu',
-              counterText: '',
-            ),
-            style: Theme.of(context).textTheme.displaySmall,
+            textAlign: TextAlign.center,
             autofocus: true,
+            style: GoogleFonts.fraunces(
+              fontSize: 36,
+              fontWeight: FontWeight.w400,
+              letterSpacing: 6,
+              color: AppColors.ink,
+            ),
           ),
           if (error != null) ...[
-            const SizedBox(height: 8),
-            Text(error!,
-                style:
-                    TextStyle(color: Theme.of(context).colorScheme.error),
-                textAlign: TextAlign.center),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              error!,
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                color: AppColors.error,
+              ),
+              textAlign: TextAlign.center,
+            ),
           ],
-          const SizedBox(height: 24),
-          FilledButton(
+          const SizedBox(height: AppSpacing.xl),
+          StampButton(
+            label: 'Eşleş',
             onPressed: busy ? null : onSubmit,
-            child: busy
-                ? const SizedBox(
-                    height: 18,
-                    width: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2))
-                : const Text('Eşleş'),
+            busy: busy,
           ),
         ],
       ),
@@ -186,33 +205,72 @@ class _QrScanTabState extends State<_QrScanTab> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        MobileScanner(controller: _scanner, onDetect: _onDetect),
-        if (widget.busy)
-          const Positioned.fill(
-              child: ColoredBox(
-                  color: Colors.black54,
-                  child: Center(child: CircularProgressIndicator()))),
-        if (widget.error != null)
-          Positioned(
-            left: 16,
-            right: 16,
-            bottom: 16,
-            child: Material(
-              color: Theme.of(context).colorScheme.errorContainer,
-              borderRadius: BorderRadius.circular(12),
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Text(widget.error!,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                        color:
-                            Theme.of(context).colorScheme.onErrorContainer)),
+    return Padding(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Column(
+        children: [
+          Text(
+            'Sayfanı oku.',
+            style: AppText.headline(context),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            'Partnerinin QR kodunu çerçeveye al.',
+            style: AppText.subtitle(context),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          Expanded(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  MobileScanner(controller: _scanner, onDetect: _onDetect),
+                  // Hafif çerçeve
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(AppRadius.md),
+                      border: Border.all(
+                        color: AppColors.paper.withValues(alpha: 0.7),
+                        width: 2,
+                      ),
+                    ),
+                  ),
+                  if (widget.busy)
+                    const Positioned.fill(
+                      child: ColoredBox(
+                        color: Colors.black54,
+                        child: Center(child: CircularProgressIndicator()),
+                      ),
+                    ),
+                  if (widget.error != null)
+                    Positioned(
+                      left: AppSpacing.md,
+                      right: AppSpacing.md,
+                      bottom: AppSpacing.md,
+                      child: Container(
+                        padding: const EdgeInsets.all(AppSpacing.md),
+                        decoration: BoxDecoration(
+                          color: AppColors.paper,
+                          borderRadius: BorderRadius.circular(AppRadius.sm),
+                          border: Border.all(color: AppColors.error),
+                        ),
+                        child: Text(
+                          widget.error!,
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            color: AppColors.error,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
           ),
-      ],
+        ],
+      ),
     );
   }
 }

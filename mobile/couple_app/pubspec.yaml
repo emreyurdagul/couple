@@ -26,11 +26,6 @@ dependencies:
   path_provider: ^2.1.5
   path: ^1.9.0
 
-  # Background location + map
-  flutter_background_geolocation: ^4.16.5
-  flutter_map: ^7.0.2
-  latlong2: ^0.9.1
-
   # Auth + secure storage
   flutter_secure_storage: ^9.2.2
 
@@ -38,14 +33,17 @@ dependencies:
   qr_flutter: ^4.1.0
   mobile_scanner: ^6.0.2
 
+  # Tasarım — Fraunces + Inter + Caveat (Google Fonts)
+  google_fonts: ^6.2.1
+
   # Chat media
   image_picker: ^1.1.2
-  record: ^5.2.0
-  just_audio: ^0.9.42
 
-  # Push
-  firebase_core: ^3.8.0
-  firebase_messaging: ^15.1.5
+  # Phase 3+ ile geri eklenecek paketler (build engelleri yüzünden Phase 2'de geçici çıkarıldı):
+  #   flutter_background_geolocation (özel Maven repo: maven.transistorsoft.com)
+  #   flutter_map + latlong2 (haritalama, Phase 4)
+  #   record + just_audio (ses notu, Phase 4)
+  #   firebase_core + firebase_messaging (push, Phase 3 sonu)
 
   # Utilities
   uuid: ^4.5.1

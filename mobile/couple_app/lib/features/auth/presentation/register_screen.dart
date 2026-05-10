@@ -2,7 +2,14 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 
+import '../../../core/theme/tokens.dart';
+import '../../../core/theme/typography.dart';
+import '../../../shared/widgets/journal_field.dart';
+import '../../../shared/widgets/paper_scaffold.dart';
+import '../../../shared/widgets/stamp_button.dart';
+import '../../../shared/widgets/wordmark.dart';
 import '../state/auth_controller.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -51,76 +58,123 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Kayıt ol')),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Form(
-            key: _formKey,
-            child: AutofillGroup(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  TextFormField(
-                    controller: _nameCtl,
-                    decoration: const InputDecoration(labelText: 'Görünen ad'),
-                    autofillHints: const [AutofillHints.name],
-                    validator: (v) => (v == null || v.trim().length < 2)
-                        ? 'En az 2 karakter'
-                        : null,
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _emailCtl,
-                    decoration: const InputDecoration(labelText: 'E-posta'),
-                    keyboardType: TextInputType.emailAddress,
-                    autofillHints: const [AutofillHints.email],
-                    validator: (v) {
-                      if (v == null || v.isEmpty) return 'E-posta gerekli';
-                      if (!v.contains('@') || !v.contains('.')) {
-                        return 'Geçerli bir e-posta gir';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _passwordCtl,
-                    decoration: const InputDecoration(
-                      labelText: 'Parola (min. 8 karakter)',
-                    ),
-                    obscureText: true,
-                    autofillHints: const [AutofillHints.newPassword],
-                    validator: (v) => (v == null || v.length < 8)
-                        ? 'En az 8 karakter'
-                        : null,
-                  ),
-                  const SizedBox(height: 24),
-                  if (_error != null) ...[
-                    Text(_error!,
-                        style:
-                            TextStyle(color: Theme.of(context).colorScheme.error)),
-                    const SizedBox(height: 12),
-                  ],
-                  FilledButton(
-                    onPressed: _busy ? null : _submit,
-                    child: _busy
-                        ? const SizedBox(
-                            height: 18,
-                            width: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2))
-                        : const Text('Kayıt ol'),
-                  ),
-                  const SizedBox(height: 8),
-                  TextButton(
-                    onPressed: _busy ? null : () => context.go('/login'),
-                    child: const Text('Zaten hesabın var mı? Giriş yap'),
-                  ),
-                ],
+    return PaperScaffold(
+      pageNumber: 1,
+      body: Form(
+        key: _formKey,
+        child: AutofillGroup(
+          child: ListView(
+            children: [
+              const SizedBox(height: AppSpacing.md),
+              const Wordmark(),
+              const SizedBox(height: AppSpacing.xl),
+              Text('İlk sayfa.', style: AppText.display(context)),
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                'Adınla başla — sonra partnerinle birleşir.',
+                style: AppText.subtitle(context),
               ),
-            ),
+              const SizedBox(height: AppSpacing.xxl),
+              JournalField(
+                controller: _nameCtl,
+                label: 'görünen ad',
+                autofillHints: const [AutofillHints.name],
+                textInputAction: TextInputAction.next,
+                validator: (v) => (v == null || v.trim().length < 2)
+                    ? 'En az 2 karakter'
+                    : null,
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              JournalField(
+                controller: _emailCtl,
+                label: 'e-posta',
+                keyboardType: TextInputType.emailAddress,
+                autofillHints: const [AutofillHints.email],
+                textInputAction: TextInputAction.next,
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'E-posta gerekli';
+                  if (!v.contains('@') || !v.contains('.')) {
+                    return 'Geçerli bir e-posta gir';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              JournalField(
+                controller: _passwordCtl,
+                label: 'parola (min. 8)',
+                obscureText: true,
+                autofillHints: const [AutofillHints.newPassword],
+                textInputAction: TextInputAction.done,
+                onFieldSubmitted: (_) => _submit(),
+                validator: (v) => (v == null || v.length < 8)
+                    ? 'En az 8 karakter'
+                    : null,
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              if (_error != null) ...[
+                _ErrorNote(_error!),
+                const SizedBox(height: AppSpacing.md),
+              ],
+              StampButton(
+                label: 'Hesabımı aç',
+                onPressed: _busy ? null : _submit,
+                busy: _busy,
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              Center(
+                child: GestureDetector(
+                  onTap: _busy ? null : () => context.go('/login'),
+                  child: RichText(
+                    text: TextSpan(
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        color: AppColors.inkSoft,
+                      ),
+                      children: [
+                        const TextSpan(text: 'Zaten kayıtlı mısın?  '),
+                        TextSpan(
+                          text: 'giriş yap →',
+                          style: GoogleFonts.fraunces(
+                            fontStyle: FontStyle.italic,
+                            color: AppColors.stamp,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ErrorNote extends StatelessWidget {
+  const _ErrorNote(this.message);
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.sm,
+      ),
+      decoration: const BoxDecoration(
+        border: Border(left: BorderSide(color: AppColors.error, width: 2)),
+      ),
+      child: Text(
+        message,
+        style: GoogleFonts.inter(
+          fontSize: 13,
+          color: AppColors.error,
+          height: 1.4,
         ),
       ),
     );

@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 
+import '../../../core/theme/tokens.dart';
+import '../../../core/theme/typography.dart';
+import '../../../shared/widgets/paper_card.dart';
+import '../../../shared/widgets/paper_scaffold.dart';
+import '../../../shared/widgets/wordmark.dart';
 import '../../auth/state/auth_controller.dart';
 
 class OnboardingScreen extends ConsumerWidget {
@@ -9,55 +15,130 @@ class OnboardingScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Eşleşme'),
-        actions: [
-          IconButton(
-            tooltip: 'Çıkış yap',
-            onPressed: () =>
-                ref.read(authControllerProvider.notifier).logout(),
-            icon: const Icon(Icons.logout),
+    return PaperScaffold(
+      pageNumber: 2,
+      body: ListView(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Wordmark(size: 22),
+              IconButton(
+                tooltip: 'Çıkış',
+                onPressed: () =>
+                    ref.read(authControllerProvider.notifier).logout(),
+                icon: const Icon(Icons.logout, size: 20),
+                color: AppColors.inkSoft,
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          Center(child: const TwoPensMark(size: 84)),
+          const SizedBox(height: AppSpacing.xl),
+          Text(
+            'Bir defter,',
+            style: AppText.display(context),
+          ),
+          Text(
+            'iki kalem.',
+            style: AppText.display(context).copyWith(color: AppColors.stamp),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Text(
+            'Partnerinle ortak sayfanı aç. '
+            'Biri davet eder, diğeri okur — ve birlikte yazmaya başlarsın.',
+            style: AppText.subtitle(context),
+          ),
+          const SizedBox(height: AppSpacing.xxl),
+          _OnboardingCard(
+            mark: '✦',
+            markColor: AppColors.stamp,
+            title: 'Ben başlatayım',
+            subtitle: 'Bir kod ve QR yarat, partnerinle paylaş.',
+            onTap: () => context.go('/couple/invite'),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          _OnboardingCard(
+            mark: '✧',
+            markColor: AppColors.leaf,
+            title: 'O bana verdi',
+            subtitle: 'Kodu yaz veya QR\'ı oku.',
+            onTap: () => context.go('/couple/accept'),
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          Center(
+            child: Text(
+              'davet 24 saat boyunca geçerli',
+              style: GoogleFonts.caveat(
+                fontSize: 16,
+                color: AppColors.inkMute,
+              ),
+            ),
           ),
         ],
       ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const SizedBox(height: 16),
-              Icon(Icons.favorite, size: 64, color: theme.colorScheme.primary),
-              const SizedBox(height: 16),
-              Text(
-                'Partnerinle bağlan',
-                style: theme.textTheme.headlineSmall,
-                textAlign: TextAlign.center,
+    );
+  }
+}
+
+class _OnboardingCard extends StatelessWidget {
+  const _OnboardingCard({
+    required this.mark,
+    required this.markColor,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  final String mark;
+  final Color markColor;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return PaperCard(
+      onTap: onTap,
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        AppSpacing.lg,
+        AppSpacing.md,
+        AppSpacing.lg,
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: markColor.withValues(alpha: 0.10),
+              shape: BoxShape.circle,
+            ),
+            child: Text(
+              mark,
+              style: GoogleFonts.fraunces(
+                fontSize: 22,
+                color: markColor,
+                height: 1.0,
               ),
-              const SizedBox(height: 8),
-              Text(
-                'Bir kod oluştur ve partnerinle paylaş veya partnerinin kodunu gir.',
-                style: theme.textTheme.bodyMedium,
-                textAlign: TextAlign.center,
-              ),
-              const Spacer(),
-              FilledButton.icon(
-                onPressed: () => context.go('/couple/invite'),
-                icon: const Icon(Icons.qr_code_2),
-                label: const Text('Davet kodu oluştur'),
-              ),
-              const SizedBox(height: 12),
-              OutlinedButton.icon(
-                onPressed: () => context.go('/couple/accept'),
-                icon: const Icon(Icons.qr_code_scanner),
-                label: const Text('Partner kodunu gir / QR tara'),
-              ),
-              const SizedBox(height: 24),
-            ],
+            ),
           ),
-        ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: AppText.title(context)),
+                const SizedBox(height: 2),
+                Text(subtitle, style: AppText.bodySoft(context)),
+              ],
+            ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Icon(Icons.arrow_forward, size: 18, color: AppColors.inkSoft),
+        ],
       ),
     );
   }

@@ -89,6 +89,7 @@ app.MapGet("/", () => Results.Ok(new { name = "Couple API", version = "0.1.0" })
 
 app.MapAuthEndpoints();
 app.MapCoupleEndpoints();
+app.MapMessageEndpoints();
 
 app.MapHub<ChatHub>("/hubs/chat");
 app.MapHub<LocationHub>("/hubs/location");
