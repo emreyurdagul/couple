@@ -9,6 +9,7 @@ Her anlamlı iş bloğu için faz logu (`progress/NNN-*.md`) ve gerekirse mimari
 | 001 | 2026-05-10 | [Çekirdek iskelet (backend + mobile + infra)](001-skeleton.md) | ✅ Tamamlandı |
 | 002 | 2026-05-10 | [Auth + Couple davet](002-auth-and-invite.md) | 🟢 Backend yeşil + mobil iskelet hazır + cihazda doğrulanmış (defter dili UI ile) |
 | 003 | 2026-05-10 → … | [Chat (metin + rich messages)](003-chat.md) | 🟢 Baseline + v2 merge'lendi; cihaz UX testi bekliyor |
+| 004 | 2026-05-10 → … | [Konum takibi](004-location.md) | 🟡 Phase 4a backend tamam; mobil + UX bekliyor |
 
 ## Mimari Karar Kayıtları (ADR)
 
@@ -20,3 +21,4 @@ Her anlamlı iş bloğu için faz logu (`progress/NNN-*.md`) ve gerekirse mimari
 | 0004 | [Soft-archive on breakup](../adr/0004-soft-archive-breakup.md) | Accepted |
 | 0005 | [Harita: flutter_map + OpenStreetMap (Google Maps yerine)](../adr/0005-flutter-map-osm.md) | Accepted |
 | 0006 | [Medya: MinIO presigned URL akışı](../adr/0006-minio-presigned.md) | Accepted |
+| 0008 | [Konum takibi: paket, beraber-süre algoritması, retention](../adr/0008-location-tracking.md) | Accepted |

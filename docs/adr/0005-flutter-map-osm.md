@@ -1,7 +1,13 @@
 # ADR-0005: flutter_map + OpenStreetMap (Google Maps yerine)
 
-**Status:** Accepted
+**Status:** Accepted (kısmen güncellendi — bkz. ADR-0008)
 **Tarih:** 2026-05-10
+
+> **Güncelleme (2026-05-10, Phase 4 başlangıcı):** ADR-0008 iki noktayı revize etti:
+> 1. **Konum toplama paketi** `flutter_background_geolocation` yerine OSS combo (`geolocator + flutter_foreground_task + workmanager`) — iOS production lisansı ($399) ödenmiyor.
+> 2. **Tile sağlayıcısı** geliştirme aşamasında doğrudan `tile.openstreetmap.org`; Stadia free tier kararı production öncesi yeniden değerlendirilecek (OSM Tile Usage Policy public app'te yasaklıyor).
+>
+> Görselleştirme tarafı (`flutter_map`) ve mimari ayrım (toplama ↔ harita) kararları geçerli.
 
 ## Context
 
