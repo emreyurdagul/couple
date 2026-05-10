@@ -1,5 +1,6 @@
 using Couple.Domain.Abstractions;
 using Couple.Infrastructure.Identity;
+using Couple.Infrastructure.Location;
 using Couple.Infrastructure.Messaging;
 using Couple.Infrastructure.Outbox;
 using Couple.Infrastructure.Persistence;
@@ -40,6 +41,11 @@ public static class DependencyInjection
         services.AddScoped<IOutboxPublisher, OutboxPublisher>();
         services.AddHostedService<OutboxDispatcher>();
         services.AddScoped<IMessageService, MessageService>();
+
+        services.AddScoped<TogetherCalculator>();
+        services.AddScoped<ILocationService, LocationService>();
+        services.AddHostedService<TogetherSummaryRollupService>();
+        services.AddHostedService<LocationRetentionService>();
 
         return services;
     }

@@ -114,6 +114,17 @@ public static class CoupleEndpoints
         };
         db.Couples.Add(couple);
 
+        db.CoupleSettings.Add(new CoupleSettings
+        {
+            Id = Guid.CreateVersion7(),
+            CoupleId = couple.Id,
+            LocationSharingEnabled = true,
+            TogetherDistanceMeters = 50,
+            LocationHistoryRetentionDays = 90,
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTimeOffset.UtcNow,
+        });
+
         invite.ConsumedByUserId = current.UserId.Value;
         invite.ConsumedAt = DateTimeOffset.UtcNow;
 

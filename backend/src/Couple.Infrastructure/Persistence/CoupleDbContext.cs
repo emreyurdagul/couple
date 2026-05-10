@@ -26,6 +26,8 @@ public class CoupleDbContext : IdentityDbContext<ApplicationUser, IdentityRole<G
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<MessageReaction> MessageReactions => Set<MessageReaction>();
     public DbSet<MessageDeletedForUser> MessageDeletedForUsers => Set<MessageDeletedForUser>();
+    public DbSet<CoupleSettings> CoupleSettings => Set<CoupleSettings>();
+    public DbSet<DailyTogetherSummary> DailyTogetherSummaries => Set<DailyTogetherSummary>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -87,6 +89,20 @@ public class CoupleDbContext : IdentityDbContext<ApplicationUser, IdentityRole<G
             e.HasIndex(x => new { x.CoupleId, x.ReceivedAt });
             e.HasIndex(x => x.Position).HasMethod("GIST");
             ApplyCoupleScopeFilter<LocationPoint>(e);
+        });
+
+        b.Entity<CoupleSettings>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => x.CoupleId).IsUnique();
+            ApplyCoupleScopeFilter<CoupleSettings>(e);
+        });
+
+        b.Entity<DailyTogetherSummary>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => new { x.CoupleId, x.Date }).IsUnique();
+            ApplyCoupleScopeFilter<DailyTogetherSummary>(e);
         });
 
         b.Entity<DeviceToken>(e =>
