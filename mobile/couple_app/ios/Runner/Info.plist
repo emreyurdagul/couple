@@ -4,6 +4,27 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Davet QR kodunu okumak için kameraya erişim gerekli.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Sesli mesaj göndermek için mikrofon erişimi gerekli.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Mesajlarda paylaşmak için fotoğraf seçmenize izin verir.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Partnerinle anlık konumunu paylaşmak için konum erişimi gerekli.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Uygulama arka plandayken bile partnerinle konum paylaşımını sürdürmek için her zaman konum erişimi gerekli.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+		<string>fetch</string>
+		<string>remote-notification</string>
+	</array>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>

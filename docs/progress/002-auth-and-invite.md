@@ -1,7 +1,7 @@
 # 002 — Auth + Couple davet
 
-**Tarih:** 2026-05-10 → …
-**Durum:** 🟡 Devam ediyor
+**Tarih:** 2026-05-10
+**Durum:** 🟢 Backend yeşil + mobil iskelet hazır; **kullanıcı doğrulaması bekleniyor**
 
 ## Hedef
 
@@ -15,8 +15,11 @@ E-posta/parola ile kayıt + login (JWT access + refresh), 6 haneli kod ve QR ile
 - [x] **Couple endpoint'leri** (`/couples/invites`, `/couples/invites/{code}/accept`, `GET /couples/me`, `DELETE /couples/me`) — soft-archive
 - [x] **JWT couple_id güncellemesi** refresh akışında (token yenilenince `GetActiveCoupleIdAsync` ile claim eklenir/çıkarılır)
 - [x] **E2E curl smoke**: register × 2 + davet + kabul + refresh + me + delete + 404 — `docs/progress/scripts/auth-and-invite-smoke.sh`
-- [ ] **Couple-scope query filter'a `Status==Active` koşulu** — şu an `IgnoreQueryFilters` ile manuel kontrol; daha sonra navigation property + filter
-- [ ] **Mobil**: kayıt/giriş ekranları, davet üret (QR + 6 haneli kod), partner kodu gir/QR tara, eşleşme onay ekranı (sıradaki adım)
+- [ ] **Couple-scope query filter'a `Status==Active` koşulu** — şu an `IgnoreQueryFilters` ile manuel kontrol; chat/konum entity'leri eklenince navigation property + filter ile
+- [x] **Mobil**: Login/Register/Onboarding/InviteCreate (QR+kod)/InviteAccept (manuel+QR scanner)/Home iskeleti
+- [x] **Mobil widget testleri**: form validation + onboarding CTAs (3/3 yeşil)
+- [x] **Android Manifest** + **iOS Info.plist**: kamera/mikrofon/fotoğraf/konum/arka plan/cleartext (dev) izinleri
+- [x] **go_router redirect**: AuthInitializing → /splash, SignedOut → /login, SignedIn (no couple) → /couple, SignedIn (has couple) → /
 
 ## Kararlar
 
@@ -53,14 +56,27 @@ docs/progress/scripts/auth-and-invite-smoke.sh
 # Sonuç: tüm 8 adım yeşil, soft-archive sonrası /couples/me 404 döndü
 ```
 
-### Kullanıcı doğrulaması gerekli
+### Kullanıcı doğrulaması gerekli (Phase 2 kapanışı için)
 
-Backend tarafı tamamlandı; mobil ekranlar geldikten sonra **gerçek 2 cihaz/emülatör** ile şu akış manuel test edilecek:
+Mobil iskelet hazır. Çalıştırma talimatı: [`docs/progress/scripts/mobile-dev-run.md`](scripts/mobile-dev-run.md). 2 emülatör veya 1 emülatör + 1 fiziksel cihazla:
 
-1. Cihaz A → kayıt ol → davet ekranında kod + QR görünüyor mu?
-2. Cihaz B → kayıt ol → "Partnerini ekle" ekranında kod gir veya QR tara
-3. Eşleşme aktif olunca her iki tarafta partner adı + ana ekran açılıyor mu?
-4. Bir taraf "Ayrıl" → her iki tarafta tekrar onboard ekranı gelmeli; refresh token revoke nedeniyle yeniden giriş istenmeli
+1. **Cihaz A** → kayıt ol → onboarding'e otomatik geçmeli
+2. **Cihaz A** → "Davet kodu oluştur" → 6 haneli kod ve QR görünmeli
+3. **Cihaz B** → kayıt ol (farklı e-posta)
+4. **Cihaz B** → "Partner kodunu gir / QR tara"
+   - **Manuel kod yolu:** kodu yaz → "Eşleş"
+   - **QR yolu:** QR tab'a geç, kamera izni ver, A'nın QR'ına tut
+5. Cihaz B Home ekranına geçmeli, partner adı "Alice" görünmeli
+6. **Cihaz A** uygulamayı tamamen kapat, tekrar aç → otomatik Home (eski oturumdan stored token; ama coupleId stored değildi; redirect Home'a gitmesi için token refresh sonrası coupleId set olmalı — **bu noktayı manuel doğrulayın**: cihaz A onboarding'e mi yoksa Home'a mı düşüyor?)
+7. **Cihaz B** üst sağ "kalp kırığı" ikonu → "Sonlandır" → Cihaz B Login ekranına dönmeli
+8. **Cihaz A** bir API isteği yapmaya çalışsın (uygulamayı yeniden açarak) → 401 alıp refresh deneyecek, refresh revoke olduğu için login ekranına dönmeli
+
+Bu listede problem yaşadığınız her adımı bana bildirin; düzeltip yeniden test ederiz.
+
+#### Bilinen kısıtlar
+
+- Geri butonu davranışı (system back) bazı yerlerde explicit go ile yönlendiriyor; native back stack ile uyumsuz olabilir.
+- ~~6 numaralı senaryo: oturum geri yüklendiğinde stored couple_id eksikse onboarding'e atar.~~ **Çözüldü:** `AuthController._restore` artık restore sonrası `refresh()` çağırıyor; backend güncel `couple_id` claim'ini döndürüp stored değeri günceller.
 
 ## Açık sorular / sonraki faza taşınanlar
 
