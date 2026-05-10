@@ -46,12 +46,12 @@ public class ChatHub : Hub<IChatClient>
             MediaObjectKey: payload.MediaObjectKey,
             MediaMimeType: payload.MediaMimeType,
             MediaDurationMs: payload.MediaDurationMs,
-            MediaSizeBytes: payload.MediaSizeBytes);
+            MediaSizeBytes: payload.MediaSizeBytes,
+            ReplyToMessageId: payload.ReplyToMessageId);
 
         var saved = await _messages.UpsertAsync(input, ct);
         var dto = MessageDto.From(saved);
 
-        // Diğer cihazlara push et (sender'a echo etmiyoruz; çağıran return ile alır).
         await Clients
             .OthersInGroup(GroupName(_currentUser.CoupleId.Value))
             .ReceiveMessage(dto);
@@ -85,11 +85,16 @@ public record SendMessagePayload(
     string? MediaObjectKey,
     string? MediaMimeType,
     int? MediaDurationMs,
-    long? MediaSizeBytes);
+    long? MediaSizeBytes,
+    Guid? ReplyToMessageId);
 
 public interface IChatClient
 {
     Task ReceiveMessage(MessageDto message);
     Task MessageRead(Guid messageId, DateTimeOffset readAt);
     Task Typing(bool isTyping);
+    Task MessageReacted(Guid messageId, ReactionDto reaction);
+    Task MessageReactionRemoved(Guid messageId, Guid userId, string emoji);
+    Task MessageEdited(MessageDto message);
+    Task MessageDeleted(Guid messageId, string scope);
 }

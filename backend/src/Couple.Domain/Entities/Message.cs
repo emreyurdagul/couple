@@ -26,4 +26,21 @@ public class Message : ICoupleScoped
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset? ReadAt { get; set; }
     public DateTimeOffset ServerReceivedAt { get; set; }
+
+    // 3.2 — rich messages
+    public Guid? ReplyToMessageId { get; set; }
+    public DateTimeOffset? EditedAt { get; set; }
+    public DateTimeOffset? DeletedAt { get; set; }
+    public Guid? DeletedByUserId { get; set; }
+
+    // 3.3 — pin
+    public bool IsPinned { get; set; }
+    public DateTimeOffset? PinnedAt { get; set; }
+
+    // 3.4 — TTL (couple ayarından gelir)
+    public DateTimeOffset? ExpiresAt { get; set; }
+
+    // 4.5 — anlık fotoğraf
+    public bool IsEphemeral { get; set; }
+    public DateTimeOffset? ViewedAt { get; set; }
 }

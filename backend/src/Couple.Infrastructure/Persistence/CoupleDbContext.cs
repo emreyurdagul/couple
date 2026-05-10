@@ -24,6 +24,8 @@ public class CoupleDbContext : IdentityDbContext<ApplicationUser, IdentityRole<G
     public DbSet<DeviceToken> DeviceTokens => Set<DeviceToken>();
     public DbSet<OutboxEvent> OutboxEvents => Set<OutboxEvent>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<MessageReaction> MessageReactions => Set<MessageReaction>();
+    public DbSet<MessageDeletedForUser> MessageDeletedForUsers => Set<MessageDeletedForUser>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -55,7 +57,26 @@ public class CoupleDbContext : IdentityDbContext<ApplicationUser, IdentityRole<G
             e.Property(x => x.Payload).HasColumnType("jsonb");
             e.HasIndex(x => new { x.CoupleId, x.CreatedAt });
             e.HasIndex(x => new { x.CoupleId, x.ServerReceivedAt });
+            e.HasIndex(x => x.ReplyToMessageId);
+            e.HasIndex(x => x.PinnedAt);
+            e.HasIndex(x => x.ExpiresAt);
             ApplyCoupleScopeFilter<Message>(e);
+        });
+
+        b.Entity<MessageReaction>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Emoji).HasMaxLength(16).IsRequired();
+            e.HasIndex(x => new { x.MessageId, x.UserId, x.Emoji }).IsUnique();
+            e.HasIndex(x => x.MessageId);
+            ApplyCoupleScopeFilter<MessageReaction>(e);
+        });
+
+        b.Entity<MessageDeletedForUser>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => new { x.MessageId, x.UserId }).IsUnique();
+            ApplyCoupleScopeFilter<MessageDeletedForUser>(e);
         });
 
         b.Entity<LocationPoint>(e =>

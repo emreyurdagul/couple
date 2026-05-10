@@ -15,17 +15,31 @@ class ChatSignalrClient {
   final Ref _ref;
   HubConnection? _conn;
 
-  // Stream broadcast — birden fazla dinleyici (ChatController + bildirim badge'i vb.)
+  // Stream broadcast — birden fazla dinleyici
   final _messageController = StreamController<Message>.broadcast();
   final _readController = StreamController<({String id, DateTime at})>.broadcast();
   final _typingController = StreamController<bool>.broadcast();
   final _stateController =
       StreamController<HubConnectionState>.broadcast();
+  final _reactedController =
+      StreamController<({String messageId, Reaction reaction})>.broadcast();
+  final _reactionRemovedController = StreamController<
+      ({String messageId, String userId, String emoji})>.broadcast();
+  final _editedController = StreamController<Message>.broadcast();
+  final _deletedController =
+      StreamController<({String messageId, String scope})>.broadcast();
 
   Stream<Message> get onMessage => _messageController.stream;
   Stream<({String id, DateTime at})> get onRead => _readController.stream;
   Stream<bool> get onTyping => _typingController.stream;
   Stream<HubConnectionState> get onState => _stateController.stream;
+  Stream<({String messageId, Reaction reaction})> get onReacted =>
+      _reactedController.stream;
+  Stream<({String messageId, String userId, String emoji})>
+      get onReactionRemoved => _reactionRemovedController.stream;
+  Stream<Message> get onEdited => _editedController.stream;
+  Stream<({String messageId, String scope})> get onDeleted =>
+      _deletedController.stream;
 
   HubConnectionState get state =>
       _conn?.state ?? HubConnectionState.Disconnected;
@@ -48,6 +62,10 @@ class ChatSignalrClient {
     conn.on('ReceiveMessage', _onReceive);
     conn.on('MessageRead', _onRead);
     conn.on('Typing', _onTyping);
+    conn.on('MessageReacted', _onReacted);
+    conn.on('MessageReactionRemoved', _onReactionRemoved);
+    conn.on('MessageEdited', _onEdited);
+    conn.on('MessageDeleted', _onDeleted);
     conn.onclose(({error}) {
       _stateController.add(HubConnectionState.Disconnected);
     });
@@ -120,6 +138,47 @@ class ChatSignalrClient {
     if (v is bool) _typingController.add(v);
   }
 
+  void _onReacted(List<Object?>? args) {
+    if (args == null || args.length < 2) return;
+    final mid = args[0]?.toString();
+    final raw = args[1];
+    if (mid == null || raw is! Map) return;
+    try {
+      final r = Reaction.fromJson(Map<String, dynamic>.from(raw));
+      _reactedController.add((messageId: mid, reaction: r));
+    } catch (_) {}
+  }
+
+  void _onReactionRemoved(List<Object?>? args) {
+    if (args == null || args.length < 3) return;
+    final mid = args[0]?.toString();
+    final uid = args[1]?.toString();
+    final emoji = args[2]?.toString();
+    if (mid == null || uid == null || emoji == null) return;
+    _reactionRemovedController.add(
+      (messageId: mid, userId: uid, emoji: emoji),
+    );
+  }
+
+  void _onEdited(List<Object?>? args) {
+    if (args == null || args.isEmpty) return;
+    final raw = args.first;
+    if (raw is Map) {
+      try {
+        final m = Message.fromJson(Map<String, dynamic>.from(raw));
+        _editedController.add(m);
+      } catch (_) {}
+    }
+  }
+
+  void _onDeleted(List<Object?>? args) {
+    if (args == null || args.length < 2) return;
+    final mid = args[0]?.toString();
+    final scope = args[1]?.toString();
+    if (mid == null || scope == null) return;
+    _deletedController.add((messageId: mid, scope: scope));
+  }
+
   ({String accessToken})? _readSession() {
     final state = _ref.read(authControllerProvider);
     if (state is AuthSignedIn) {
@@ -134,6 +193,10 @@ class ChatSignalrClient {
     await _readController.close();
     await _typingController.close();
     await _stateController.close();
+    await _reactedController.close();
+    await _reactionRemovedController.close();
+    await _editedController.close();
+    await _deletedController.close();
   }
 }
 

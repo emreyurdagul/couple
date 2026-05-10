@@ -30,6 +30,27 @@ int messageTypeToServer(MessageType t) {
   }
 }
 
+class Reaction {
+  Reaction({
+    required this.id,
+    required this.userId,
+    required this.emoji,
+    required this.createdAt,
+  });
+
+  final String id;
+  final String userId;
+  final String emoji;
+  final DateTime createdAt;
+
+  factory Reaction.fromJson(Map<String, dynamic> j) => Reaction(
+        id: j['id'] as String,
+        userId: j['userId'] as String,
+        emoji: j['emoji'] as String,
+        createdAt: DateTime.parse(j['createdAt'] as String),
+      );
+}
+
 class Message {
   Message({
     required this.id,
@@ -45,6 +66,16 @@ class Message {
     required this.createdAt,
     this.readAt,
     required this.serverReceivedAt,
+    this.replyToMessageId,
+    this.editedAt,
+    this.deletedAt,
+    this.deletedByUserId,
+    this.isPinned = false,
+    this.pinnedAt,
+    this.expiresAt,
+    this.isEphemeral = false,
+    this.viewedAt,
+    this.reactions = const [],
     this.deliveryStatus = MessageDeliveryStatus.delivered,
   });
 
@@ -62,21 +93,46 @@ class Message {
   final DateTime? readAt;
   final DateTime serverReceivedAt;
 
-  /// Sadece istemci tarafında kullanılır. Server'dan gelen mesajlar
-  /// always = delivered olarak başlar.
+  // 3.2
+  final String? replyToMessageId;
+  final DateTime? editedAt;
+  final DateTime? deletedAt;
+  final String? deletedByUserId;
+
+  // 3.3
+  final bool isPinned;
+  final DateTime? pinnedAt;
+
+  // 3.4
+  final DateTime? expiresAt;
+
+  // 4.5
+  final bool isEphemeral;
+  final DateTime? viewedAt;
+
+  final List<Reaction> reactions;
+
+  /// Sadece istemci tarafında kullanılır.
   final MessageDeliveryStatus deliveryStatus;
+
+  bool get isDeleted => deletedAt != null;
 
   Message copyWith({
     DateTime? readAt,
     MessageDeliveryStatus? deliveryStatus,
     DateTime? serverReceivedAt,
+    DateTime? editedAt,
+    DateTime? deletedAt,
+    String? content,
+    bool clearContent = false,
+    List<Reaction>? reactions,
   }) =>
       Message(
         id: id,
         coupleId: coupleId,
         senderId: senderId,
         type: type,
-        content: content,
+        content: clearContent ? null : (content ?? this.content),
         payload: payload,
         mediaObjectKey: mediaObjectKey,
         mediaMimeType: mediaMimeType,
@@ -85,6 +141,16 @@ class Message {
         createdAt: createdAt,
         readAt: readAt ?? this.readAt,
         serverReceivedAt: serverReceivedAt ?? this.serverReceivedAt,
+        replyToMessageId: replyToMessageId,
+        editedAt: editedAt ?? this.editedAt,
+        deletedAt: deletedAt ?? this.deletedAt,
+        deletedByUserId: deletedByUserId,
+        isPinned: isPinned,
+        pinnedAt: pinnedAt,
+        expiresAt: expiresAt,
+        isEphemeral: isEphemeral,
+        viewedAt: viewedAt,
+        reactions: reactions ?? this.reactions,
         deliveryStatus: deliveryStatus ?? this.deliveryStatus,
       );
 
@@ -105,6 +171,29 @@ class Message {
             : null,
         serverReceivedAt:
             DateTime.parse(j['serverReceivedAt'] as String),
+        replyToMessageId: j['replyToMessageId'] as String?,
+        editedAt: j['editedAt'] is String
+            ? DateTime.parse(j['editedAt'] as String)
+            : null,
+        deletedAt: j['deletedAt'] is String
+            ? DateTime.parse(j['deletedAt'] as String)
+            : null,
+        deletedByUserId: j['deletedByUserId'] as String?,
+        isPinned: (j['isPinned'] as bool?) ?? false,
+        pinnedAt: j['pinnedAt'] is String
+            ? DateTime.parse(j['pinnedAt'] as String)
+            : null,
+        expiresAt: j['expiresAt'] is String
+            ? DateTime.parse(j['expiresAt'] as String)
+            : null,
+        isEphemeral: (j['isEphemeral'] as bool?) ?? false,
+        viewedAt: j['viewedAt'] is String
+            ? DateTime.parse(j['viewedAt'] as String)
+            : null,
+        reactions: (j['reactions'] as List? ?? [])
+            .cast<Map<String, dynamic>>()
+            .map(Reaction.fromJson)
+            .toList(),
       );
 }
 
