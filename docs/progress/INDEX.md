@@ -8,7 +8,7 @@ Her anlamlı iş bloğu için faz logu (`progress/NNN-*.md`) ve gerekirse mimari
 |---|---|---|---|
 | 001 | 2026-05-10 | [Çekirdek iskelet (backend + mobile + infra)](001-skeleton.md) | ✅ Tamamlandı |
 | 002 | 2026-05-10 | [Auth + Couple davet](002-auth-and-invite.md) | 🟢 Backend yeşil + mobil iskelet hazır + cihazda doğrulanmış (defter dili UI ile) |
-| 003 | 2026-05-10 → … | [Chat (metin)](003-chat.md) | 🟡 Devam ediyor |
+| 003 | 2026-05-10 → … | [Chat (metin + rich messages)](003-chat.md) | 🟢 Baseline + v2 merge'lendi; cihaz UX testi bekliyor |
 
 ## Mimari Karar Kayıtları (ADR)
 
