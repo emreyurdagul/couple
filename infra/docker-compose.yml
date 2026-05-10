@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgis/postgis:16-3.4
+    image: docker.io/postgis/postgis:16-3.4
     container_name: couple-postgres
     restart: unless-stopped
     environment:
@@ -10,7 +10,7 @@ services:
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
-      - ./postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
       interval: 5s
@@ -18,7 +18,7 @@ services:
       retries: 10
 
   minio:
-    image: minio/minio:latest
+    image: docker.io/minio/minio:latest
     container_name: couple-minio
     restart: unless-stopped
     command: server /data --console-address ":9001"
@@ -29,7 +29,7 @@ services:
       - "${MINIO_API_PORT:-9000}:9000"
       - "${MINIO_CONSOLE_PORT:-9001}:9001"
     volumes:
-      - ./minio_data:/data
+      - minio_data:/data
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 10s
@@ -63,7 +63,7 @@ services:
       - "8080"
 
   caddy:
-    image: caddy:2
+    image: docker.io/library/caddy:2
     container_name: couple-caddy
     restart: unless-stopped
     depends_on:
@@ -73,9 +73,9 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - ./caddy_data:/data
-      - ./caddy_config:/config
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro,Z
+      - caddy_data:/data
+      - caddy_config:/config
 
 volumes:
   postgres_data:

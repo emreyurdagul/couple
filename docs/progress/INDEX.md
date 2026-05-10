@@ -7,6 +7,7 @@ Her anlamlı iş bloğu için faz logu (`progress/NNN-*.md`) ve gerekirse mimari
 | # | Tarih | Konu | Durum |
 |---|---|---|---|
 | 001 | 2026-05-10 | [Çekirdek iskelet (backend + mobile + infra)](001-skeleton.md) | ✅ Tamamlandı |
+| 002 | 2026-05-10 → … | [Auth + Couple davet](002-auth-and-invite.md) | 🟡 Devam ediyor |
 
 ## Mimari Karar Kayıtları (ADR)
 
