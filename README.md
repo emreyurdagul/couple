@@ -11,6 +11,13 @@
 
 Detaylı mimari: bkz. `/home/emre/.claude/plans/imdi-benim-bir-ift-woolly-crab.md`.
 
+## İlerleme & kararlar
+
+- **Faz logları:** [`docs/progress/INDEX.md`](docs/progress/INDEX.md)
+- **Mimari karar kayıtları (ADR):** [`docs/adr/`](docs/adr/)
+
+Her faz sonunda `docs/progress/NNN-konu.md` ve gerekirse `docs/adr/NNNN-baslik.md` eklenir; INDEX güncellenir.
+
 ## Repo
 
 ```
