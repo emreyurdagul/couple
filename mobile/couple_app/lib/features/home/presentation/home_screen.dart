@@ -11,6 +11,7 @@ import '../../../shared/widgets/paper_scaffold.dart';
 import '../../auth/state/auth_controller.dart';
 import '../../couple/data/couple_models.dart';
 import '../../couple/data/couple_repository.dart';
+import '../../location/state/location_controller.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -120,11 +121,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           onTap: () => context.go('/chat'),
         ),
         const SizedBox(height: AppSpacing.sm),
-        _StreamCard(
-          icon: '◊',
-          color: AppColors.leaf,
-          title: 'Konum',
-          subtitle: 'Yakında — birbirinizi göreceksiniz.',
+        Consumer(
+          builder: (context, ref, _) {
+            final locState = ref.watch(locationControllerProvider);
+            final subtitle = _locationSubtitle(locState.togetherTodayMinutes);
+            return _StreamCard(
+              icon: '◊',
+              color: AppColors.leaf,
+              title: 'Konum',
+              subtitle: subtitle,
+              onTap: () => context.go('/map'),
+            );
+          },
         ),
         const SizedBox(height: AppSpacing.sm),
         _StreamCard(
@@ -345,6 +353,15 @@ class _StreamCard extends StatelessWidget {
       ),
     );
   }
+}
+
+String _locationSubtitle(int minutes) {
+  if (minutes <= 0) return 'Birbirinizi haritada görün.';
+  if (minutes < 60) return 'Bugün $minutes dk beraberdiniz.';
+  final h = minutes ~/ 60;
+  final m = minutes % 60;
+  if (m == 0) return 'Bugün $h sa beraberdiniz.';
+  return 'Bugün $h sa $m dk beraberdiniz.';
 }
 
 String _dateLabel(DateTime d) {

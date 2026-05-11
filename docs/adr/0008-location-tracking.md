@@ -74,3 +74,9 @@ Her kullanıcı için `date_trunc('minute', RecordedAt)` kovaları, kova içi `A
 - **Outbox üzerinden konum publish** — Diğer event'lerle simetri kurabilirdi ama high-frequency yüzünden tabloyu şişirirdi. Realtime kanalı doğrudan SignalR hub yeterli, kayıp durumu için partner `GET /current` fallback'i mevcut.
 - **DailyTogetherSummary lazy-only (hosted service yok)** — Her sorguda son 90 günü compute etmek 90 ayrı SQL × 2 user. Hosted service ile sadece dünü hesaplamak amortize ediyor.
 - **Sınırsız ham retention** — 1 yıl × 2 user × 1440 dk ≈ 1M satır/çift × N çift. PostGIS hâlâ çalışır ama günlük rollup zaten olduğu için ham veriyi 90 günde silmek pratik.
+
+## Uygulama notları (2026-05-11, Phase 4b)
+
+- **`workmanager` sürümü ^0.5.2 → ^0.9.0+3**: 0.5.2 hâlâ Flutter v1 embedding'in (`ShimPluginRegistry`, `PluginRegistrantCallback`) API'larını kullanıyordu; bunlar Flutter 3.29 ile kaldırıldı ve `:workmanager:compileDebugKotlin` fail oluyordu. 0.9.x federated platform'a (workmanager_android / workmanager_apple) geçmiş durumda; API ufak değişiklikler: `existingWorkPolicy` parametresi artık `ExistingPeriodicWorkPolicy` enum'unu istiyor, `isInDebugMode` deprecated (WorkmanagerDebug handlers tavsiyesi).
+- **flutter_foreground_task `TaskHandler.onStart`** v8.x'te `Future<void>` döner (önceden `void`). `_LocationForegroundTaskHandler` buna göre yazıldı.
+- **`Position.timestamp`** geolocator 13.x'te artık non-nullable; `?? DateTime.now()` fallback gerekmedi.

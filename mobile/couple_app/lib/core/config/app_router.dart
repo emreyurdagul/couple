@@ -10,6 +10,7 @@ import '../../features/couple/presentation/invite_accept_screen.dart';
 import '../../features/couple/presentation/invite_create_screen.dart';
 import '../../features/couple/presentation/onboarding_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
+import '../../features/location/presentation/map_screen.dart';
 import '../../shared/widgets/page_turn_transition.dart';
 import '../theme/tokens.dart';
 
@@ -78,6 +79,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/chat',
         pageBuilder: (_, s) => page(const ChatScreen(), s),
+      ),
+      GoRoute(
+        path: '/map',
+        pageBuilder: (_, s) => page(const MapScreen(), s),
       ),
     ],
   );

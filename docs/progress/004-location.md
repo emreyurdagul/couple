@@ -1,7 +1,7 @@
 # 004 — Konum takibi
 
-**Tarih:** 2026-05-10 → …
-**Durum:** 🟡 Phase 4a (backend) tamamlandı (`abf76e5`); mobil paket bekliyor
+**Tarih:** 2026-05-10 → 2026-05-11
+**Durum:** 🟡 Phase 4a backend ✅ (`abf76e5`); Phase 4b mobile kod ✅, cihaz UX testi ⏸
 
 ## Hedef
 
@@ -33,16 +33,17 @@
 
 ### Phase 4b — Mobil (⏸ bekliyor)
 
-- [ ] Paketler: `flutter_map`, `latlong2`, `geolocator`, `flutter_foreground_task`, `workmanager`, `permission_handler`, `battery_plus`
-- [ ] AndroidManifest + Info.plist — foreground service tag'leri (izinler zaten mevcut)
-- [ ] `lib/core/config/app_config.dart` — `tileUrlTemplate` (geliştirme: OSM doğrudan), `tileAttribution`, `userAgentPackageName`
-- [ ] `features/location/data/` — `location_models`, `location_repository`, `location_signalr_client`, `location_tracker` (OSS combo)
-- [ ] `features/location/state/location_controller.dart` — Riverpod, my/partner/history/togetherToday, history pencere (1s/24s/7g)
-- [ ] `features/location/presentation/map_screen.dart` — flutter_map + OSM tile, MarkerLayer, 50m altında `TogetherMarker`, PolylineLayer, segmented control
-- [ ] `features/location/presentation/widgets/` — `together_marker`, `history_window_picker`
-- [ ] `app_router.dart` — `/map` route + `hasCouple` guard
-- [ ] `home_screen.dart` — Harita kartı + "bugün X dk beraber" mini metrik
-- [ ] `main.dart` — Auth listener: login + couple → `LocationTracker.start()`, logout → `stop()`; permission_handler izin akışı
+- [x] Paketler: `flutter_map`, `latlong2`, `geolocator`, `flutter_foreground_task`, `workmanager`, `permission_handler`, `battery_plus`
+- [x] AndroidManifest — foreground service + receiver kayıtları (`flutter_foreground_task`); Info.plist izinleri zaten mevcuttu
+- [x] `lib/core/config/app_config.dart` — `tileUrlTemplate` (OSM dev), `tileAttribution`, `userAgentPackageName`, `togetherMergeMeters`
+- [x] `features/location/data/` — `location_models`, `location_repository`, `location_signalr_client`, `location_tracker` (OSS combo + workmanager dispatcher)
+- [x] `features/location/state/location_controller.dart` — Riverpod, my/partner/history/togetherToday, 1s/24s/7g pencere
+- [x] `features/location/presentation/map_screen.dart` — flutter_map + OSM tile + MarkerLayer + 50m altında `TogetherMarker` + PolylineLayer + segmented control + "bugün X dk beraber" alt kart
+- [x] `features/location/presentation/widgets/` — `together_marker`, `history_window_picker`
+- [x] `app_router.dart` — `/map` route (couple guard mevcut redirect tablosundan geliyor: hasCouple false → /couple)
+- [x] `home_screen.dart` — "Konum" kartı `/map`'e tıklanabilir + subtitle "Bugün X dk beraberdiniz"
+- [x] `main.dart` — Auth listener: signedIn + coupleId → izin akışı (whileInUse → always + notification) + `tracker.start()`; logout → `stop()`
+- [x] `flutter analyze` temiz (0 issues)
 - [ ] Cihazda manuel test — kullanıcı UX onayı
 
 ## Kararlar
@@ -80,6 +81,26 @@ Mimari kararların gerekçeleriyle tamamı: [ADR-0008](../adr/0008-location-trac
 - `src/Couple.Infrastructure/DependencyInjection.cs` — `TogetherCalculator`, `ILocationService`, 2 hosted service
 - `src/Couple.Infrastructure/Persistence/Migrations/CoupleDbContextModelSnapshot.cs`
 
+## Eklenen / Değişen dosyalar (Phase 4b — mobil)
+
+### Yeni
+- `mobile/couple_app/lib/features/location/data/location_models.dart` — LocationDto, LocationInput, TogetherDay, TogetherSummary
+- `mobile/couple_app/lib/features/location/data/location_repository.dart` — REST (record / batch / partner-current / history / together)
+- `mobile/couple_app/lib/features/location/data/location_signalr_client.dart` — `/hubs/location` ince sarmalayıcı (ChatSignalrClient deseninde, tek event ReceiveLocation)
+- `mobile/couple_app/lib/features/location/data/location_tracker.dart` — `LocationTracker` interface + `OssLocationTracker` (geolocator stream + flutter_foreground_task notification + workmanager 15dk fallback)
+- `mobile/couple_app/lib/features/location/state/location_controller.dart` — Riverpod NotifierProvider; my/partner last + history + togetherToday + connection + history window
+- `mobile/couple_app/lib/features/location/presentation/map_screen.dart` — flutter_map + OSM tile + polyline + marker (50m altında TogetherMarker) + segmented control + "bugün" kartı
+- `mobile/couple_app/lib/features/location/presentation/widgets/together_marker.dart`
+- `mobile/couple_app/lib/features/location/presentation/widgets/history_window_picker.dart`
+
+### Değişen
+- `mobile/couple_app/pubspec.yaml` — yedi yeni paket; `workmanager: ^0.9.0+3` (Flutter 3.29 v2 embedding uyumu için 0.5.2 yerine)
+- `mobile/couple_app/android/app/src/main/AndroidManifest.xml` — `flutter_foreground_task` Service + Receiver kayıtları
+- `mobile/couple_app/lib/core/config/app_config.dart` — tile + userAgent + togetherMergeMeters
+- `mobile/couple_app/lib/core/config/app_router.dart` — `/map` route
+- `mobile/couple_app/lib/features/home/presentation/home_screen.dart` — "Konum" kartı `/map` tıklanabilir + togetherToday subtitle
+- `mobile/couple_app/lib/main.dart` — Auth listener: signedIn+coupleId → izin akışı + `tracker.start()`; logout → `stop()`
+
 ## Doğrulama
 
 ```bash
@@ -95,7 +116,8 @@ BASE=http://localhost:5049 docs/progress/scripts/location-rest-smoke.sh
 
 - ✅ Backend build temiz
 - ⏸ Smoke çalıştırması bekliyor (dev DB up değil)
-- ⏸ Cihazda manuel UX testi (Phase 4b sonrası)
+- ✅ Mobil `flutter analyze` temiz (0 issue)
+- ⏸ Cihazda manuel UX testi (kullanıcı doğrulaması bekleniyor)
 
 ### Kullanıcı doğrulaması gerekli (Phase 4a için)
 
@@ -103,6 +125,18 @@ Dev DB ayağa kalkınca:
 1. Migration uygula: `dotnet ef database update -p backend/src/Couple.Infrastructure -s backend/src/Couple.Api`
 2. API'yi başlat: `cd backend && dotnet run --project src/Couple.Api`
 3. `docs/progress/scripts/location-rest-smoke.sh` koş — exit code 0, "Location REST smoke geçti" mesajı bekleniyor.
+
+### Kullanıcı doğrulaması gerekli (Phase 4b için)
+
+İki gerçek cihazda (veya emülatör + cihaz):
+1. Login → izin akışı: whileInUse dialog → Always promote → bildirim izni → Harita kartı "Bugün — beraber"
+2. `/map` → kalıcı bildirim "Konum paylaşımı açık" görünür
+3. İki cihazı 50m altı → tek "biz" imleci; PolylineLayer kendi/partner ayrı renkte
+4. Cihazları 200m+ uzaklaştır → ayrı imleçler, ayrı polyline'lar
+5. Segmented control 1s/24s/7g → polyline penceresi güncellenir
+6. Uygulamayı kapat (terminate) → ~15dk içinde workmanager periyodik POST yapıyor mu (backend log)
+7. Home kartında "Bugün X dk beraberdiniz" güncel
+8. Logout → bildirim kaybolur, tracker durur
 
 ## Açık sorular / sonraki adıma taşınanlar
 
