@@ -4,7 +4,10 @@ using Couple.Api.Endpoints;
 using Couple.Api.Hubs;
 using Couple.Domain.Abstractions;
 using Couple.Infrastructure;
+using Couple.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 
@@ -67,6 +70,20 @@ builder.Services.AddHealthChecks()
         tags: new[] { "ready" });
 
 var app = builder.Build();
+
+if (!app.Environment.IsEnvironment("Testing"))
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<CoupleDbContext>();
+    await db.Database.MigrateAsync();
+}
+
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto,
+    KnownIPNetworks = { },
+    KnownProxies = { },
+});
 
 app.UseSerilogRequestLogging();
 

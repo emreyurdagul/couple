@@ -1,0 +1,73 @@
+# Coolify deployment compose — production
+# Local dev için: infra/docker-compose.yml kullan (Caddy + host portları içerir).
+# Bu dosyayı Coolify "Docker Compose" build-pack uygulaması olarak deploy et;
+# host port mapping ve Caddy yok — Coolify kendi proxy'si (Traefik) ile yönlendirir.
+
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-couple}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:9000/minio/health/live || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_started
+    environment:
+      # Coolify magic: bu değişken set edildiğinde Coolify otomatik FQDN üretir,
+      # Traefik etiketlerini ekler ve container içinde değişkenin değerini doldurur.
+      - SERVICE_FQDN_API_8080
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__Default=Host=postgres;Port=5432;Database=${POSTGRES_DB:-couple};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD}
+      - Jwt__Secret=${JWT_SECRET}
+      - Jwt__Issuer=${JWT_ISSUER:-couple-api}
+      - Jwt__Audience=${JWT_AUDIENCE:-couple-app}
+      - Storage__Endpoint=minio:9000
+      - Storage__AccessKey=${MINIO_ROOT_USER:-minioadmin}
+      - Storage__SecretKey=${MINIO_ROOT_PASSWORD}
+      - Storage__Bucket=${MEDIA_BUCKET:-couple-media}
+      - Storage__UseSsl=false
+    expose:
+      - "8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/health/live || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+volumes:
+  postgres_data:
+  minio_data:
