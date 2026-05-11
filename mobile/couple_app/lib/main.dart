@@ -31,17 +31,23 @@ class _CoupleAppState extends ConsumerState<CoupleApp> {
   void initState() {
     super.initState();
     // Auth state değişimlerini dinle — login+couple olunca tracker başlat,
-    // logout/break olunca durdur.
+    // logout/break olunca durdur. Auth stabilize olunca version check tetikle.
     _authSub = ref.listenManual<AuthState>(
       authControllerProvider,
       (prev, next) async {
         await _syncTracker(next);
+        if (next is! AuthInitializing && !_versionCheckScheduled) {
+          _versionCheckScheduled = true;
+          // GoRouter redirect tamamlansın diye küçük gecikme — yoksa
+          // dialog açılır, sonra router /login'e yönlenirken pop'lar.
+          Future.delayed(const Duration(milliseconds: 400), _checkForUpdate);
+        }
       },
       fireImmediately: true,
     );
-    WidgetsBinding.instance.addPostFrameCallback((_) => _checkForUpdate());
   }
 
+  bool _versionCheckScheduled = false;
   bool _updatePromptShown = false;
   Future<void> _checkForUpdate() async {
     if (_updatePromptShown) return;

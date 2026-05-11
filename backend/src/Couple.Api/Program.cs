@@ -17,6 +17,15 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.UseSerilog((ctx, cfg) => cfg.ReadFrom.Configuration(ctx.Configuration).WriteTo.Console());
 
+// APK upload için 250MB; Kestrel default 28MB.
+const long maxUploadBytes = 250L * 1024 * 1024;
+builder.WebHost.ConfigureKestrel(o => o.Limits.MaxRequestBodySize = maxUploadBytes);
+builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(o =>
+{
+    o.MultipartBodyLengthLimit = maxUploadBytes;
+    o.ValueLengthLimit = int.MaxValue;
+});
+
 builder.Services.AddOpenApi();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddCoupleInfrastructure(builder.Configuration);
