@@ -61,6 +61,15 @@ services:
       - Storage__UseSsl=false
     expose:
       - "8080"
+    # Coolify dockercompose buildpack'inde custom_labels ve SERVICE_FQDN magic
+      # auto-Traefik label üretmiyor; doğrudan compose'da tanımlıyoruz.
+      # Custom domain'e geçince Host(...) rule'unu güncelle.
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.couple-api.rule=Host(`vgvexxga7f7ah4puhujzkh60.72.61.95.76.sslip.io`)
+      - traefik.http.routers.couple-api.entryPoints=http
+      - traefik.http.routers.couple-api.service=couple-api
+      - traefik.http.services.couple-api.loadbalancer.server.port=8080
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://localhost:8080/health/live || exit 1"]
       interval: 30s
