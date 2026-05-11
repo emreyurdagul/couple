@@ -12,12 +12,18 @@ RUN dotnet publish src/Couple.Api/Couple.Api.csproj -c Release -o /app/publish -
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
+
+# curl healthcheck için; libgssapi-krb5-2 Npgsql'in soft load uyarısını susturur
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl libgssapi-krb5-2 \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY --from=build /app/publish .
 
 ENV ASPNETCORE_URLS=http://+:8080
 EXPOSE 8080
 
-HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
-  CMD wget -qO- http://localhost:8080/health/live || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 --start-period=30s \
+  CMD curl -fsS http://localhost:8080/health/live || exit 1
 
 ENTRYPOINT ["dotnet", "Couple.Api.dll"]
