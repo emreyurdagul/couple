@@ -1,7 +1,7 @@
 name: couple_app
 description: "Couple — chat, location sharing, and shared moments."
 publish_to: 'none'
-version: 0.1.0+1
+version: 0.1.1+2
 
 environment:
   sdk: ^3.11.5
@@ -57,6 +57,10 @@ dependencies:
   intl: ^0.19.0
   collection: ^1.18.0
   emoji_picker_flutter: ^4.4.0
+
+  # Phase 5b — dinamik APK güncelleme
+  package_info_plus: ^8.0.2
+  open_filex: ^4.5.0
 
 dev_dependencies:
   flutter_test:

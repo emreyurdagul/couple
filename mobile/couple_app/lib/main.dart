@@ -6,6 +6,8 @@ import 'package:permission_handler/permission_handler.dart';
 
 import 'core/config/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'core/update/update_dialog.dart';
+import 'core/update/version_service.dart';
 import 'features/auth/state/auth_controller.dart';
 import 'features/location/data/location_tracker.dart';
 
@@ -36,6 +38,27 @@ class _CoupleAppState extends ConsumerState<CoupleApp> {
         await _syncTracker(next);
       },
       fireImmediately: true,
+    );
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkForUpdate());
+  }
+
+  bool _updatePromptShown = false;
+  Future<void> _checkForUpdate() async {
+    if (_updatePromptShown) return;
+    final info = await ref.read(versionServiceProvider).checkForUpdate();
+    if (info == null) return;
+    final router = ref.read(appRouterProvider);
+    final ctx = router.routerDelegate.navigatorKey.currentContext;
+    if (ctx == null || !ctx.mounted) return;
+    _updatePromptShown = true;
+    await UpdateDialog.show(
+      ctx,
+      info: info,
+      onDownloadAndInstall: (onProgress) async {
+        final service = ref.read(versionServiceProvider);
+        final apk = await service.downloadApk(info, onProgress: onProgress);
+        return service.installApk(apk);
+      },
     );
   }
 
