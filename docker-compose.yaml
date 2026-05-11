@@ -1,6 +1,6 @@
 # Coolify deployment compose — production
-# Local dev için: infra/docker-compose.yml kullan (Caddy + host portları içerir).
-# Bu dosyayı Coolify "Docker Compose" build-pack uygulaması olarak deploy et;
+# Lokal dev için: infra/docker-compose.yml kullan (Caddy + host portları içerir).
+# Coolify "Docker Compose" build-pack uygulaması bu dosyayı repo root'ta otomatik bulur;
 # host port mapping ve Caddy yok — Coolify kendi proxy'si (Traefik) ile yönlendirir.
 
 services:
@@ -36,7 +36,7 @@ services:
 
   api:
     build:
-      context: ../backend
+      context: ./backend
       dockerfile: Dockerfile
     restart: unless-stopped
     depends_on:

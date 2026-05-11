@@ -9,7 +9,7 @@ Backend API'yi Coolify sunucusunda yayına almak. Lokal dev compose'unu bozmadan
 
 ## Kararlar
 
-- Yeni `infra/docker-compose.coolify.yml` — Caddy yok, host port yok, Coolify Traefik proxy → ADR-0010
+- Yeni `docker-compose.yaml` (repo root) — Caddy yok, host port yok, Coolify Traefik proxy → ADR-0010
 - `SERVICE_FQDN_API_8080` magic env → Coolify otomatik FQDN + Traefik labels → ADR-0010
 - `Program.cs` startup'ta `db.Database.MigrateAsync()` — ilk deploy'da şema + postgis extension otomatik kurulur → ADR-0010
 - `UseForwardedHeaders` middleware — Coolify proxy'sinin `X-Forwarded-*` header'larına güven (SignalR ws + HTTPS scheme tespiti)
@@ -17,7 +17,7 @@ Backend API'yi Coolify sunucusunda yayına almak. Lokal dev compose'unu bozmadan
 
 ## Eklenen / Değişen dosyalar
 
-- `infra/docker-compose.coolify.yml` — yeni; Coolify-uyumlu production compose (postgres, minio, api; Caddy ve host port yok)
+- `docker-compose.yaml` (repo root) — yeni; Coolify-uyumlu production compose (postgres, minio, api; Caddy ve host port yok)
 - `backend/src/Couple.Api/Program.cs` — startup migration + UseForwardedHeaders eklendi
 - `docs/adr/0010-coolify-deployment.md` — ADR
 - `docs/progress/INDEX.md` — 006 satırı + ADR-0010 satırı eklendi (sonraki commit'te)

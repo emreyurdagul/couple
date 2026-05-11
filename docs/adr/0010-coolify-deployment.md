@@ -17,7 +17,7 @@ Kısıtlar:
 
 **Coolify, "Docker Compose" build pack'iyle private GitHub repo'sundan deploy edecek.**
 
-- Yeni `infra/docker-compose.coolify.yml` dosyası: lokal dev compose'undan ayrı, Caddy ve host port mapping içermez. Coolify Traefik kendi yönlendirir.
+- Yeni `docker-compose.yaml` (repo root): lokal dev compose'undan ayrı, Caddy ve host port mapping içermez. Coolify Traefik kendi yönlendirir. Root'ta tutmamızın sebebi Coolify Docker Compose build-pack'in default lookup path'i.
 - API service'inde `SERVICE_FQDN_API_8080` magic env değişkeni — Coolify otomatik FQDN üretir, Traefik etiketlerini ekler, port 8080'e route'lar.
 - Backend `Program.cs` başlangıçta `db.Database.MigrateAsync()` çağırıyor → ilk deploy'da PostGIS şeması otomatik kurulur (postgis extension `HasPostgresExtension` annotation'ı ile gelir).
 - `UseForwardedHeaders` middleware'i Coolify proxy'sinin X-Forwarded-Proto/For header'larına güvenecek şekilde yapılandırıldı (SignalR ws upgrade ve HTTPS scheme tespiti için kritik).
