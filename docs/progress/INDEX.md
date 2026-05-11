@@ -11,7 +11,7 @@ Her anlamlı iş bloğu için faz logu (`progress/NNN-*.md`) ve gerekirse mimari
 | 003 | 2026-05-10 → … | [Chat (metin + rich messages)](003-chat.md) | 🟢 Baseline + v2 merge'lendi; cihaz UX testi bekliyor |
 | 004 | 2026-05-10 → 2026-05-11 | [Konum takibi](004-location.md) | 🟡 Phase 4a backend + 4b mobil kod tamam; cihaz UX testi bekliyor |
 | 005 | 2026-05-11 | [APK release build optimizasyonu (Phase 4c)](005-apk-optimizasyon.md) | 🟢 Boyut 203 MB → 29.8 MB; release smoke test bekliyor |
-| 006 | 2026-05-11 | [Coolify production deploy hazırlığı (Phase 5a)](006-coolify-deployment.md) | 🟡 Compose + migrate-on-startup hazır; GitHub repo + Coolify App kullanıcıda |
+| 006 | 2026-05-11 → 2026-05-12 | [Coolify production deploy (Phase 5a)](006-coolify-deployment.md) | 🟢 Yayında: `vgvexxga7f7ah4puhujzkh60.72.61.95.76.sslip.io` (HTTP/healthy) |
 
 ## Mimari Karar Kayıtları (ADR)
 

@@ -1,7 +1,7 @@
-# 006 — Coolify production deploy hazırlığı (Phase 5a)
+# 006 — Coolify production deploy (Phase 5a)
 
-**Tarih:** 2026-05-11
-**Durum:** 🟡 Dosyalar hazır; GitHub repo + Coolify App kurulumu kullanıcıda; Coolify Application oluşturma ve deploy bekliyor
+**Tarih:** 2026-05-11 → 2026-05-12
+**Durum:** 🟢 Yayında — http://vgvexxga7f7ah4puhujzkh60.72.61.95.76.sslip.io/ (`/`, `/health/live`, `/health/ready` hepsi 200)
 
 ## Hedef
 
@@ -32,25 +32,36 @@ dotnet build src/Couple.Api/Couple.Api.csproj -c Release
 - ✅ Build temiz (0 hata, sadece NU1903 pre-existing güvenlik uyarıları — bu fazda dokunulmadı)
 - ✅ Coolify projesi MCP üzerinden oluşturuldu
 
-## Kullanıcı tarafında bekleyen adımlar
+## Karşılaşılan sorunlar ve düzeltmeler
 
-- [ ] `gh auth login` (interaktif)
-- [ ] Private repo oluştur (`couple`) + master branch push
-- [ ] Coolify UI → Sources → Custom GitHub App register/install (tek sefer)
-- [ ] Repo URL + GitHub App UUID'sini paylaş → Coolify Application MCP ile oluşturulur, deploy tetiklenir
+1. **`wget` runtime image'da yok** → `aspnet:10.0` slim Debian image'inde wget yok, Dockerfile HEALTHCHECK fail veriyordu (`unhealthy`). Çözüm: runtime stage'e `apt-get install curl libgssapi-krb5-2`, healthcheck `curl -fsS`'e geçildi (commit `b4038d2`).
+2. **Coolify Traefik routing 404** → Application'da `ports_exposes` 80'di; 8080'e güncellendi ama Coolify dockercompose buildpack'inde `custom_labels` UI alanı ve `SERVICE_FQDN_API_8080` magic env Traefik etiketlerini compose'a yansıtmıyor (sadece `coolify.*` etiketleri geliyor). Çözüm: Traefik etiketlerini doğrudan `docker-compose.yaml`'daki api servisine `labels:` bloğunda tanımladık (commit `3ef11cc`). Bu deneyim memory'ye eklendi (`feedback_coolify_compose_labels.md`).
+3. **Env var duplicate'ları** → İlk app create'inde paralel POST attempt'lerinden 2 set env var oluştu (bir set boş şifrelerle). Boş duplicate'lar silindi, ilk set gerçek değerlerle update'lendi.
 
-## Deploy doğrulaması (Application oluştuktan sonra)
+## Doğrulama (production)
 
-- [ ] Coolify build log → SDK 10.0 image pull + publish başarılı
-- [ ] `/` → `{name: "Couple API", version: "0.1.0"}`
-- [ ] `/health/live` → 200
-- [ ] `/health/ready` → 200 (postgres bağlı)
-- [ ] Postgres logs'unda `postgis` extension oluştu, migration table'lar görünüyor
-- [ ] Mobile app `apiBaseUrl`'ünü Coolify FQDN'sine güncelle, login akışını cihazda test et
+```bash
+curl http://vgvexxga7f7ah4puhujzkh60.72.61.95.76.sslip.io/
+# {"name":"Couple API","version":"0.1.0"}
+
+curl http://vgvexxga7f7ah4puhujzkh60.72.61.95.76.sslip.io/health/live
+# Healthy
+
+curl http://vgvexxga7f7ah4puhujzkh60.72.61.95.76.sslip.io/health/ready
+# Healthy (postgres bağlı, migration uygulandı)
+```
+
+## Coolify kaynakları
+
+- Project: `couple` (UUID `mgp1dxymzr2mzuc75gpbs63z`) / Environment: `production` (`rvgfpebjefceblb7grueeedm`)
+- Application: `couple-api` (UUID `vgvexxga7f7ah4puhujzkh60`)
+- Server: localhost (`zuu7m54x8wklq817bgksjumf`, IP `72.61.95.76`)
+- GitHub source: `emreyurdagul/couple` (private), branch `master`, GitHub App `emrecoolify` (`t132xak4reuu5l7p07q2zxiy`)
 
 ## Açık sorular / sonraki faza taşınanlar
 
-- [ ] MinIO public erişim (medya presigned URL akışı için `SERVICE_FQDN_MINIO_9000` eklenecek mi?)
-- [ ] Coolify Application oluşturma + env var seed (POSTGRES_PASSWORD, JWT_SECRET vb.) MCP üzerinden tamamlanacak
-- [ ] Mobile app build config — `apiBaseUrl` Coolify FQDN'sine geçiş (Phase 5b)
-- [ ] Backup/restore stratejisi: postgres volume snapshot otomatize?
+- [ ] MinIO public erişim (medya presigned URL akışı için `SERVICE_FQDN_MINIO_9000` eklenecek mi?) — `docker_compose_domains` UI'dan set edilebilir veya benzer Traefik label injection.
+- [ ] Mobile app `apiBaseUrl` Coolify FQDN'sine geçiş (Phase 5b) — `mobile/couple_app/lib/.../api_base_url.dart` (varsa) güncelle, cihazda login + chat + konum akışını doğrula.
+- [ ] Custom domain (örn. `api.couple.<senin-domain>`) — DNS kayıtları + compose'daki Traefik Host(...) etiketi güncelle, Let's Encrypt için `entryPoints=https` ve `certresolver=letsencrypt` ekle.
+- [ ] Backup/restore stratejisi: Postgres volume snapshot otomatize (Coolify backup özelliği veya cron + restic).
+- [ ] Production tekrar deploy edileceğinde `JWT_SECRET` rotation prosedürü dokumante edilsin (mobile login token'ları invalidate olur).
