@@ -28,6 +28,7 @@ public class CoupleDbContext : IdentityDbContext<ApplicationUser, IdentityRole<G
     public DbSet<MessageDeletedForUser> MessageDeletedForUsers => Set<MessageDeletedForUser>();
     public DbSet<CoupleSettings> CoupleSettings => Set<CoupleSettings>();
     public DbSet<DailyTogetherSummary> DailyTogetherSummaries => Set<DailyTogetherSummary>();
+    public DbSet<AppVersion> AppVersions => Set<AppVersion>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -125,6 +126,16 @@ public class CoupleDbContext : IdentityDbContext<ApplicationUser, IdentityRole<G
             e.Property(x => x.TokenHash).HasMaxLength(128).IsRequired();
             e.HasIndex(x => x.TokenHash).IsUnique();
             e.HasIndex(x => x.UserId);
+        });
+
+        b.Entity<AppVersion>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Platform).HasMaxLength(16).IsRequired();
+            e.Property(x => x.VersionName).HasMaxLength(32).IsRequired();
+            e.Property(x => x.FileName).HasMaxLength(256).IsRequired();
+            e.Property(x => x.Sha256).HasMaxLength(64);
+            e.HasIndex(x => new { x.Platform, x.VersionCode }).IsUnique();
         });
     }
 

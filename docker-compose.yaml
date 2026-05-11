@@ -59,6 +59,10 @@ services:
       - Storage__SecretKey=${MINIO_ROOT_PASSWORD}
       - Storage__Bucket=${MEDIA_BUCKET:-couple-media}
       - Storage__UseSsl=false
+      - Storage__UploadsPath=/app/uploads
+      - Admin__Token=${ADMIN_TOKEN}
+    volumes:
+      - api_uploads:/app/uploads
     expose:
       - "8080"
     # Coolify dockercompose buildpack'inde custom_labels ve SERVICE_FQDN magic
@@ -80,3 +84,4 @@ services:
 volumes:
   postgres_data:
   minio_data:
+  api_uploads:

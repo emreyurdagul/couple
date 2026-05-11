@@ -7,7 +7,9 @@ using Couple.Infrastructure;
 using Couple.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 
@@ -90,6 +92,20 @@ app.UseSerilogRequestLogging();
 if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 
+var uploadsPath = builder.Configuration["Storage:UploadsPath"]
+    ?? Path.Combine(app.Environment.ContentRootPath, "uploads");
+Directory.CreateDirectory(Path.Combine(uploadsPath, "apks"));
+
+var staticContentTypes = new FileExtensionContentTypeProvider();
+staticContentTypes.Mappings[".apk"] = "application/vnd.android.package-archive";
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(Path.Combine(uploadsPath, "apks")),
+    RequestPath = "/downloads",
+    ContentTypeProvider = staticContentTypes,
+    ServeUnknownFileTypes = false,
+});
+
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -108,6 +124,7 @@ app.MapAuthEndpoints();
 app.MapCoupleEndpoints();
 app.MapMessageEndpoints();
 app.MapLocationEndpoints();
+app.MapVersionEndpoints();
 
 app.MapHub<ChatHub>("/hubs/chat");
 app.MapHub<LocationHub>("/hubs/location");
