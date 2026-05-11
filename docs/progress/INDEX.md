@@ -12,6 +12,7 @@ Her anlamlı iş bloğu için faz logu (`progress/NNN-*.md`) ve gerekirse mimari
 | 004 | 2026-05-10 → 2026-05-11 | [Konum takibi](004-location.md) | 🟡 Phase 4a backend + 4b mobil kod tamam; cihaz UX testi bekliyor |
 | 005 | 2026-05-11 | [APK release build optimizasyonu (Phase 4c)](005-apk-optimizasyon.md) | 🟢 Boyut 203 MB → 29.8 MB; release smoke test bekliyor |
 | 006 | 2026-05-11 → 2026-05-12 | [Coolify production deploy (Phase 5a)](006-coolify-deployment.md) | 🟢 Yayında: `vgvexxga7f7ah4puhujzkh60.72.61.95.76.sslip.io` (HTTP/healthy) |
+| 007 | 2026-05-11 → 2026-05-12 | [Mobile prod switch + APK update sistemi (Phase 5b)](007-mobile-prod-switch-apk-update.md) | 🟢 apiBaseUrl release-aware + in-app update; cihaz testi başarılı |
 
 ## Mimari Karar Kayıtları (ADR)
 
@@ -26,3 +27,4 @@ Her anlamlı iş bloğu için faz logu (`progress/NNN-*.md`) ve gerekirse mimari
 | 0008 | [Konum takibi: paket, beraber-süre algoritması, retention](../adr/0008-location-tracking.md) | Accepted |
 | 0009 | [APK release build optimizasyonu (R8 + ProGuard + split-per-abi)](../adr/0009-apk-release-optimizasyon.md) | Accepted |
 | 0010 | [Production deploy — Coolify + Docker Compose (GitHub private)](../adr/0010-coolify-deployment.md) | Accepted |
+| 0011 | [Dinamik APK güncelleme sistemi (in-app update)](../adr/0011-apk-update-system.md) | Accepted |
